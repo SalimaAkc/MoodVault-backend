@@ -365,16 +365,14 @@ app.get('/api/admin/playlists', async (req, res) => {
 
 
 // Add a song manually to the library
-app.post('/api/admin/songs', async (req, res) => {
-    const { youtube_id, title, artist, mood } = req.body;
+app.get('/api/admin/songs', async (req, res) => {
     try {
-        await pool.query(
-            'INSERT INTO songs (youtube_id, title, artist, mood) VALUES (?, ?, ?, ?)', 
-            [youtube_id, title, artist, mood]
+        const [songs] = await pool.query(
+            'SELECT id, title, artist, mood, youtube_id FROM songs'
         );
-        res.json({ success: true });
-    } catch (err) { 
-        res.status(500).json({ error: "Add song failed" }); 
+        res.json(songs);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch songs" });
     }
 });
 
@@ -405,6 +403,7 @@ app.post('/api/users/:id/upload', upload.single('profile_pic'), async (req, res)
             success: true, 
             profile_pic: filePath 
         });
+
     } catch (err) {
         console.error("Upload route error:", err);
         res.status(500).json({ error: "File upload failed" });
